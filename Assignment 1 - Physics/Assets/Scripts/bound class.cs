@@ -1,6 +1,6 @@
 
 // constructor that stores up down left and right bound data
-struct bounds
+public class bounds
 {
     public float UP, DOWN, LEFT, RIGHT;
 

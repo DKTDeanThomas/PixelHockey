@@ -5,79 +5,78 @@ using UnityEngine.UI;
 
 public class Score : MonoBehaviour
 {
+    public enum enumScore
+    {
+        AiScore,
+        PlayerScore
+    }
+
     public int playerHit = 0;
     public int aiHit = 0;
 
-    public enum score
+    public UI ui;
+
+    public int winScore;
+
+
+    public Text AiScoretxt;
+    public Text PlayerScoretxt;
+
+
+    public int Aiscore;
+    public int Playerscore;
+
+    private void FixedUpdate()
     {
-        AiScore, PlayerScore
-    }
-
-    public Text AiScoretxt, PlayerScoretxt;
-
-    public UIManager ui;
-
-    public int maxScore;
-
-    private int aiscore, playerscore;
-
-    private int AiScore
-    {
-        get { return aiscore; }
-        set
+        if(Aiscore == winScore)
         {
-        aiscore = value;
-
-            if (value == maxScore)
-                ui.ShowRestartCanvas(true);
+            ui.restartCanvas(true);
+        }
+        else if(Playerscore == winScore)
+        {
+            ui.restartCanvas(false);
         }
     }
 
-    private int PlayerScore
+
+    public void Increment(enumScore scoreType)
     {
-        get { return playerscore; }
-        set
+        if (scoreType == enumScore.AiScore)
         {
-            playerscore = value;
-
-            if (value == maxScore)
-                ui.ShowRestartCanvas(false);
-        }
-    }
-
-    public void Increment(score whichScore)
-    {
-        if (whichScore == score.AiScore)
-        {
-            AiScoretxt.text = (++AiScore).ToString();
-           
-        }
-
-        else
-        {
-            PlayerScoretxt.text = (++PlayerScore).ToString();
-         
-        }
-    }
-
-    public void Decrement(score whichScore)
-    {
-        if (whichScore == score.AiScore)
-        {
-            AiScoretxt.text = (--AiScore).ToString();
+            Aiscore++;
+            AiScoretxt.text = Aiscore.ToString();
             
         }
 
         else
         {
-            PlayerScoretxt.text = (--PlayerScore).ToString();
+            Playerscore++;
+            PlayerScoretxt.text = Playerscore.ToString();
+         
+        }
+    }
+
+    public void Decrement(enumScore scoreType)
+    {
+        if (scoreType == enumScore.AiScore)
+        {
+            Aiscore--;
+            AiScoretxt.text = Aiscore.ToString();
+
+        }
+
+        else
+        {
+            Playerscore--;
+            PlayerScoretxt.text = Playerscore.ToString();
+         
             
         }
     }
 
     public void ResetScores()
     {
-        AiScore = PlayerScore = 0;
+        Aiscore = Playerscore = 0;
         AiScoretxt.text = PlayerScoretxt.text = "0";
     }
 }

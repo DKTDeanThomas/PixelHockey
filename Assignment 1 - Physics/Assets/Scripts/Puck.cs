@@ -6,52 +6,52 @@ using UnityEngine.SceneManagement;
 public class Puck : MonoBehaviour
 {
     
-    public Score scoreInstance;
+    public Score scoreRef;
 
     // static bool for method availability
-    public static bool WasGoal;
+    public static bool hitGoal;
 
     public float maxSpeed;
 
-    private Rigidbody2D rb;
+    private Rigidbody2D puckRB;
 
     public bool disabled;
 
     private bounds puck;
     public Transform puckBounds;
 
-   private bool hitTwice = false; 
+    private bool hitTwice = false; 
 
 
 
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        WasGoal = false;
+        puckRB = GetComponent<Rigidbody2D>();
+        hitGoal = false;
 
         puck = new bounds(puckBounds.GetChild(0).position.y, puckBounds.GetChild(1).position.y,
                                  puckBounds.GetChild(2).position.x, puckBounds.GetChild(3).position.x);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         // If the AI's goal was collided with, increment the Player's score by 1, set the WasGoal variable to true, and reset the puck position
         // Vice versa, if player's goal
         // WasGoal set to true to avoid infinite looping
 
-        if (!WasGoal)
+        if (!hitGoal)
         {
-            if (other.tag == "AIGoal")
+            if (collision.tag == "AIGoal")
             {
-                scoreInstance.Increment(Score.score.PlayerScore);
-                WasGoal = true;
-                StartCoroutine(ResetPuck(false));
+                scoreRef.Increment(Score.enumScore.PlayerScore);
+                hitGoal = true;
+                StartCoroutine(pkReset(false));
             }
-            else if (other.tag == "PlayerGoal")
+            else if (collision.tag == "PlayerGoal")
             {
-                scoreInstance.Increment(Score.score.AiScore);
-                WasGoal = true;
-                StartCoroutine(ResetPuck(true));
+                scoreRef.Increment(Score.enumScore.AiScore);
+                hitGoal = true;
+                StartCoroutine(pkReset(true));
             }
 
         }
@@ -62,12 +62,12 @@ public class Puck : MonoBehaviour
 
         if (other.gameObject.CompareTag("Player"))
         {          
-            scoreInstance.playerHit += 1;
+            scoreRef.playerHit += 1;
             hitTwice = false;
 
             Debug.Log("Player hit puck!");
 
-            if (scoreInstance.playerHit > 1)
+            if (scoreRef.playerHit > 1)
             {
                 hitTwice = true;
                 Debug.Log("Twiceeeeee!");
@@ -77,12 +77,12 @@ public class Puck : MonoBehaviour
         }
         else if (other.gameObject.CompareTag("AI"))
         {
-            scoreInstance.aiHit += 1;
+            scoreRef.aiHit += 1;
             hitTwice = false;
 
             Debug.Log("AI hit puck!");
 
-            if (scoreInstance.aiHit > 1)
+            if (scoreRef.aiHit > 1)
             {
                 hitTwice = true;
                 Debug.Log("Twiceeeeee!");
@@ -90,13 +90,13 @@ public class Puck : MonoBehaviour
             }
         }
 
-        if (scoreInstance.aiHit > 1 || scoreInstance.playerHit > 1)
+        if (scoreRef.aiHit > 1 || scoreRef.playerHit > 1)
         {
-            if (rb.position.y < puck.DOWN)
+            if (puckRB.position.y < puck.DOWN)
             {
                 if (other.gameObject.CompareTag("Player"))
                 {
-                    scoreInstance.playerHit += 1;
+                    scoreRef.playerHit += 1;
 
                    
                     Debug.Log("Player hit puck again!");
@@ -107,7 +107,7 @@ public class Puck : MonoBehaviour
             {
                 if(other.gameObject.CompareTag("AI"))
                 {
-                    scoreInstance.aiHit += 1;
+                    scoreRef.aiHit += 1;
 
                     
                     Debug.Log("AI hit puck again!");
@@ -118,52 +118,63 @@ public class Puck : MonoBehaviour
     }
 
 
-    private IEnumerator ResetPuck(bool didAIScore)
+    private IEnumerator pkReset(bool aiScored)
     {
 
-        // waits 1 real time second, before resetting puck position, then resets WasGoal's status to false
+        // waits 1 real time second, before resetting puck position, then resets hitGoal's status to false
         yield return new WaitForSecondsRealtime(1);
-        WasGoal = false;
-        rb.velocity = rb.position = new Vector2(0, 0);
+        hitGoal = false;
+        puckRB.velocity = puckRB.position = new Vector2(0, 0);
 
-        if (didAIScore)
+        if (aiScored)
             // If AI scored, set puck to players side. If Player scored, set puck to AI's side
-            rb.position = new Vector2(0, -1);
+            recenterPuck(0);
         else
-            rb.position = new Vector2(0, 1);
+            recenterPuck(1);
+
 
     }
 
-    public void Centerpuck()
+    public void recenterPuck(int sidetoSpawn)
     {
-        rb.position = new Vector2(0, 0);
+        switch (sidetoSpawn)
+        {
+            case 0:
+                puckRB.position = new Vector2(0, -1);
+                break;
+            case 1:
+                puckRB.position = new Vector2(0, 1);
+                break;
+            case 2:
+                puckRB.velocity = puckRB.position = new Vector2(0, 0);
 
-
+                break;
+        }
     }
     private void FixedUpdate()
 
     // Restricts the pucks velocity from exceeding the set maximum 
     {
-        rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxSpeed);
+        puckRB.velocity = Vector2.ClampMagnitude(puckRB.velocity, maxSpeed);
        
 
         if (hitTwice)
         {
-            if (scoreInstance.playerHit > 1 && scoreInstance.aiHit <= 1)
+            if (scoreRef.playerHit > 1 && scoreRef.aiHit <= 1)
             {
                 Debug.Log("Player penalised");
-                scoreInstance.Decrement(Score.score.PlayerScore);
-                scoreInstance.playerHit = scoreInstance.aiHit = 0;
-                ResetPuck(true);
+                scoreRef.Decrement(Score.enumScore.PlayerScore);
+                scoreRef.playerHit = scoreRef.aiHit = 0;
+                pkReset(true);
                
             }
 
-            else if (scoreInstance.aiHit > 1 && scoreInstance.playerHit <= 1)
+            else if (scoreRef.aiHit > 1 && scoreRef.playerHit <= 1)
             {
                 Debug.Log("AI penalised");
-                scoreInstance.Decrement(Score.score.AiScore);
-                scoreInstance.playerHit = scoreInstance.aiHit = 0;
-                ResetPuck(false);
+                scoreRef.Decrement(Score.enumScore.AiScore);
+                scoreRef.playerHit = scoreRef.aiHit = 0;
+                pkReset(false);
                 
             }
         }

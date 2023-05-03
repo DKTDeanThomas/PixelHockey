@@ -20,7 +20,6 @@ public class AI : MonoBehaviour
     private Vector2 targetCoords;
 
     private bool FirstTimeinOppsHalf = true;
-    private float OffSetX;
 
 
     void Start()
@@ -44,7 +43,7 @@ public class AI : MonoBehaviour
         // While a goal has not been scored yet, the pucks's position is compared to the lower puck barrier.
         // If the puck is below the AI's half, the AI follows the puck's coordinates, while staying along its own y axis. 
         // If the puck is in the AI's half, the AI will move towards the puck on both axis at a set speed
-        if (!Puck.WasGoal)
+        if (!Puck.hitGoal)
         {
            
             if (Puckrb.position.y < puck.DOWN)
@@ -75,4 +74,6 @@ public class AI : MonoBehaviour
     {
         AIrb.position = InitialCoords;
     }
+
+
 }
